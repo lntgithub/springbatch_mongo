@@ -10,7 +10,6 @@ import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.repository.support.MongoRepositoryFactoryBean;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.support.RepositoryFactorySupport;
-import org.springframework.stereotype.Component;
 
 import com.citigroup.gftp.spring.da.repository.support.EntityCollectionNameMapper;
 
@@ -18,16 +17,16 @@ import com.citigroup.gftp.spring.da.repository.support.EntityCollectionNameMappe
  * @author ap16737
  *
  */
-@Component
+// @Component
 public class CustomMongoRepositoryFactoryBean<T extends Repository<S, ID>, S, ID extends Serializable>
-		extends MongoRepositoryFactoryBean<T, S, ID> {
+extends MongoRepositoryFactoryBean<T, S, ID> {
 
 	@Autowired
 	private EntityCollectionNameMapper mapper;
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see org.springframework.data.mongodb.repository.support.
 	 * MongoRepositoryFactoryBean
 	 * #getFactoryInstance(org.springframework.data.mongodb

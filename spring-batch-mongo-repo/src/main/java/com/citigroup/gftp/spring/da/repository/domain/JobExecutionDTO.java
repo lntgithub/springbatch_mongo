@@ -3,6 +3,7 @@
  */
 package com.citigroup.gftp.spring.da.repository.domain;
 
+import java.math.BigInteger;
 import java.util.Date;
 
 import org.springframework.batch.core.BatchStatus;
@@ -24,7 +25,7 @@ import com.citigroup.gftp.spring.da.repository.support.MongoJobRepositoryUtils;
 public class JobExecutionDTO {
 
 	@Id
-	private Long id;
+	private BigInteger id;
 
 	@Field(MongoJobRepositoryUtils.JOB_INSTANCE_ID_KEY)
 	private Long jobInstanceId;
@@ -67,7 +68,9 @@ public class JobExecutionDTO {
 		JobExecutionDTO dto = null;
 		if (jobExecution != null) {
 			dto = new JobExecutionDTO();
-			dto.id = jobExecution.getId();
+			if (jobExecution != null && jobExecution.getId() != null) {
+				dto.id = new BigInteger(String.valueOf(jobExecution.getId()));
+			}
 			dto.jobInstanceId = jobExecution.getJobId();
 			dto.startTime = jobExecution.getStartTime();
 			dto.endTime = jobExecution.getEndTime();
@@ -89,11 +92,11 @@ public class JobExecutionDTO {
 	public JobExecution toJobExecution(JobInstance jobInstance) {
 		JobExecution jobExecution = null;
 		if (jobInstance == null) {
-			jobExecution = new JobExecution(id, parameters,
+			jobExecution = new JobExecution(id.longValue(), parameters,
 					jobConfigurationName);
 		} else {
-			jobExecution = new JobExecution(jobInstance, id, parameters,
-					jobConfigurationName);
+			jobExecution = new JobExecution(jobInstance, id.longValue(),
+					parameters, jobConfigurationName);
 		}
 		jobExecution.setStartTime(startTime);
 		jobExecution.setEndTime(endTime);
@@ -111,14 +114,15 @@ public class JobExecutionDTO {
 	/**
 	 * @return the id
 	 */
-	public Long getId() {
+	public BigInteger getId() {
 		return id;
 	}
 
 	/**
-	 * @param id the id to set
+	 * @param id
+	 *            the id to set
 	 */
-	public void setId(Long id) {
+	public void setId(BigInteger id) {
 		this.id = id;
 	}
 
@@ -130,7 +134,8 @@ public class JobExecutionDTO {
 	}
 
 	/**
-	 * @param jobInstanceId the jobInstanceId to set
+	 * @param jobInstanceId
+	 *            the jobInstanceId to set
 	 */
 	public void setJobInstanceId(Long jobInstanceId) {
 		this.jobInstanceId = jobInstanceId;
@@ -144,7 +149,8 @@ public class JobExecutionDTO {
 	}
 
 	/**
-	 * @param startTime the startTime to set
+	 * @param startTime
+	 *            the startTime to set
 	 */
 	public void setStartTime(Date startTime) {
 		this.startTime = startTime;
@@ -158,7 +164,8 @@ public class JobExecutionDTO {
 	}
 
 	/**
-	 * @param endTime the endTime to set
+	 * @param endTime
+	 *            the endTime to set
 	 */
 	public void setEndTime(Date endTime) {
 		this.endTime = endTime;
@@ -172,7 +179,8 @@ public class JobExecutionDTO {
 	}
 
 	/**
-	 * @param status the status to set
+	 * @param status
+	 *            the status to set
 	 */
 	public void setStatus(BatchStatus status) {
 		this.status = status;
@@ -186,7 +194,8 @@ public class JobExecutionDTO {
 	}
 
 	/**
-	 * @param exitCode the exitCode to set
+	 * @param exitCode
+	 *            the exitCode to set
 	 */
 	public void setExitCode(String exitCode) {
 		this.exitCode = exitCode;
@@ -200,7 +209,8 @@ public class JobExecutionDTO {
 	}
 
 	/**
-	 * @param exitDescription the exitDescription to set
+	 * @param exitDescription
+	 *            the exitDescription to set
 	 */
 	public void setExitDescription(String exitDescription) {
 		this.exitDescription = exitDescription;
@@ -214,7 +224,8 @@ public class JobExecutionDTO {
 	}
 
 	/**
-	 * @param version the version to set
+	 * @param version
+	 *            the version to set
 	 */
 	public void setVersion(Integer version) {
 		this.version = version;
@@ -228,7 +239,8 @@ public class JobExecutionDTO {
 	}
 
 	/**
-	 * @param createTime the createTime to set
+	 * @param createTime
+	 *            the createTime to set
 	 */
 	public void setCreateTime(Date createTime) {
 		this.createTime = createTime;
@@ -242,7 +254,8 @@ public class JobExecutionDTO {
 	}
 
 	/**
-	 * @param lastUpdated the lastUpdated to set
+	 * @param lastUpdated
+	 *            the lastUpdated to set
 	 */
 	public void setLastUpdated(Date lastUpdated) {
 		this.lastUpdated = lastUpdated;
@@ -256,7 +269,8 @@ public class JobExecutionDTO {
 	}
 
 	/**
-	 * @param jobConfigurationName the jobConfigurationName to set
+	 * @param jobConfigurationName
+	 *            the jobConfigurationName to set
 	 */
 	public void setJobConfigurationName(String jobConfigurationName) {
 		this.jobConfigurationName = jobConfigurationName;
@@ -270,11 +284,11 @@ public class JobExecutionDTO {
 	}
 
 	/**
-	 * @param parameters the parameters to set
+	 * @param parameters
+	 *            the parameters to set
 	 */
 	public void setParameters(JobParameters parameters) {
 		this.parameters = parameters;
 	}
 
-	
 }

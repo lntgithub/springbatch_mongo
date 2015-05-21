@@ -7,6 +7,7 @@ import static com.mongodb.BasicDBObjectBuilder.start;
 
 import org.springframework.data.mongodb.core.query.Update;
 
+import com.citigroup.gftp.spring.da.repository.domain.JobExecutionDTO;
 import com.citigroup.gftp.spring.da.repository.domain.StepExecutionDTO;
 import com.mongodb.DBObject;
 
@@ -27,7 +28,7 @@ public class MongoJobRepositoryUtils {
 	public static final String FILTER_COUT_KEY = "filterCount";
 	public static final String WRITE_COUNT_KEY = "writeCount";
 	public static final String EXIT_CODE_KEY = "exitCode";
-	public static final String EXIT_MESSAGE_KEY = "writeCount";
+	public static final String EXIT_MESSAGE_KEY = "exitDesc";
 	public static final String READ_SKIP_COUNT_KEY = "readSkipCount";
 	public static final String WRITE_SKIP_COUNT_KEY = "writeSkipCount";
 	public static final String PROCESS_SKIP_COUNT_KEY = "processSkipCount";
@@ -79,6 +80,18 @@ public class MongoJobRepositoryUtils {
 				.add(WRITE_SKIP_COUNT_KEY, dto.getWriteSkipCount())
 				.add(PROCESS_SKIP_COUNT_KEY, dto.getProcessSkipCount())
 				.add(ROLLBACK_COUNT_KEY, dto.getRollbackCount())
+				.add(LAST_UPDATED_KEY, dto.getLastUpdated()).get();
+		return Update.fromDBObject(updateObj, new String[] {});
+	}
+
+	public static Update toUpdate(JobExecutionDTO dto) {
+		DBObject updateObj = start().add(START_TIME_KEY, dto.getStartTime())
+				.add(END_TIME_KEY, dto.getEndTime())
+				.add(STATUS_KEY, dto.getStatus().toString())
+				.add(EXIT_CODE_KEY, dto.getExitCode())
+				.add(EXIT_MESSAGE_KEY, dto.getExitDescription())
+				.add(VERSION_KEY, dto.getVersion())
+				.add(CREATE_TIME_KEY, dto.getCreateTime())
 				.add(LAST_UPDATED_KEY, dto.getLastUpdated()).get();
 		return Update.fromDBObject(updateObj, new String[] {});
 	}

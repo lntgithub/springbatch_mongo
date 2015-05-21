@@ -10,8 +10,10 @@ import java.util.Set;
 import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobInstance;
 import org.springframework.batch.core.repository.dao.JobExecutionDao;
+import org.springframework.batch.core.repository.dao.NoSuchObjectException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
 import org.springframework.jdbc.support.incrementer.DataFieldMaxValueIncrementer;
@@ -40,6 +42,24 @@ public class MongoJobExecutionDao implements JobExecutionDao {
 	@Autowired
 	private MongoJobExecutionRepository jeRepository;
 
+	/**
+	 * Validate JobExecution. At a minimum, JobId, StartTime, EndTime, and
+	 * Status cannot be null.
+	 *
+	 * @param jobExecution
+	 * @throws IllegalArgumentException
+	 */
+	private void validateJobExecution(JobExecution jobExecution) {
+
+		Assert.notNull(jobExecution);
+		Assert.notNull(jobExecution.getJobId(),
+				"JobExecution Job-Id cannot be null.");
+		Assert.notNull(jobExecution.getStatus(),
+				"JobExecution status cannot be null.");
+		Assert.notNull(jobExecution.getCreateTime(),
+				"JobExecution create time cannot be null");
+	}
+
 	/*
 	 * (non-Javadoc)
 	 *
@@ -50,6 +70,19 @@ public class MongoJobExecutionDao implements JobExecutionDao {
 		jeRepository.save(JobExecutionDTO.fromJobExecution(jobExecution));
 	}
 
+	private JobExecutionDTO getUpdatedDTO(JobExecutionDTO dto,
+			JobExecutionDTO origDTO) {
+		dto.setStartTime(origDTO.getStartTime());
+		dto.setEndTime(origDTO.getEndTime());
+		dto.setStatus(origDTO.getStatus());
+		dto.setExitCode(origDTO.getExitCode());
+		dto.setExitDescription(origDTO.getExitDescription());
+		dto.setVersion(origDTO.getVersion() + 1);
+		dto.setCreateTime(origDTO.getCreateTime());
+		dto.setLastUpdated(origDTO.getLastUpdated());
+		return dto;
+	}
+
 	/*
 	 * (non-Javadoc)
 	 *
@@ -57,7 +90,40 @@ public class MongoJobExecutionDao implements JobExecutionDao {
 	 * updateJobExecution(org.springframework.batch.core.JobExecution)
 	 */
 	public void updateJobExecution(JobExecution jobExecution) {
-		// TODO
+		validateJobExecution(jobExecution);
+		Assert.notNull(
+				jobExecution.getId(),
+				"JobExecution ID cannot be null. JobExecution must be saved before it can be updated");
+
+		Assert.notNull(
+				jobExecution.getVersion(),
+				"JobExecution version cannot be null. JobExecution must be saved before it can be updated");
+		JobExecutionDTO origDTO = JobExecutionDTO
+				.fromJobExecution(jobExecution);
+		synchronized (jobExecution) {
+			JobExecutionDTO dto = jeRepository.findOne(origDTO.getId());
+			if (dto != null) {
+				// it means we found the execution to be updated.
+				JobExecutionDTO updatedDTO = jeRepository
+						.updateForIDAndVersion(getUpdatedDTO(dto, origDTO));
+				if (updatedDTO == null) {
+					// this means we were trying to save an obsolete version of
+					// the
+					// step execution.
+					JobExecutionDTO currDTO = jeRepository.findById(origDTO
+							.getId());
+					throw new OptimisticLockingFailureException(
+							"Attempt to update job execution id="
+									+ currDTO.getId() + " with wrong version ("
+									+ dto.getVersion()
+									+ "), where current version is "
+									+ currDTO.getVersion());
+				}
+			} else {
+				throw new NoSuchObjectException("Invalid JobExecution, ID "
+						+ jobExecution.getId() + " not found.");
+			}
+		}
 	}
 
 	/*
